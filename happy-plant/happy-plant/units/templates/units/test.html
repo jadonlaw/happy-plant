@@ -20,8 +20,9 @@ a{color:#8bc34a}
 
 <fieldset><legend>My units</legend>
 <button onclick="get('')">Show my units</button>
-<input id="serial" placeholder="Serial to remove, e.g. HP-0001">
+<input id="serial" placeholder="Serial, e.g. HP-0001">
 <button onclick="call(v('serial')+'/remove',{})">Remove device</button>
+<button onclick="get(v('serial')+'/live')">Latest reading</button>
 </fieldset>
 
 <h2 style="font-size:16px">Server reply</h2><pre id="out">—</pre>

@@ -62,9 +62,47 @@ class Unit(models.Model):
         self.secret_hash = hash_secret(board_secret)
         return board_secret
 
+    SAVE_EVERY_MIN = {"high": 5, "medium": 15, "low": 45}
+
+    @property
+    def save_every_seconds(self):
+        return self.SAVE_EVERY_MIN.get(self.power_mode, 15) * 60
+
     @classmethod
     def create_new(cls, **fields):
         unit = cls(**fields)
         board_secret = unit.assign_identity()
         unit.save()
         return unit, board_secret
+
+
+class Reading(models.Model):
+    """One saved reading from a board. Empty (null) means that sensor wasn't connected. Never filled in or guessed."""
+
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name="readings")
+    received_at = models.DateTimeField(db_index=True)
+    light_raw = models.PositiveIntegerField(null=True, blank=True, help_text="Light charge time in microseconds. Bigger = darker.")
+    air_f = models.FloatField(null=True, blank=True)
+    air_raw = models.PositiveIntegerField(null=True, blank=True)
+    moisture_raw = models.PositiveIntegerField(null=True, blank=True, help_text="0-65535. Bigger = drier.")
+    soil_f = models.FloatField(null=True, blank=True)
+    battery_pct = models.PositiveSmallIntegerField(null=True, blank=True)
+    rssi = models.SmallIntegerField(null=True, blank=True, help_text="Wi-Fi signal in dBm.")
+
+    class Meta:
+        ordering = ["-received_at"]
+        indexes = [models.Index(fields=["unit", "-received_at"])]
+
+    def __str__(self):
+        return f"{self.unit.serial} {self.received_at:%Y-%m-%d %H:%M}"
+
+
+# When a unit changes or is deleted, drop its cached board login so the board sees the change right away.
+from django.db.models.signals import post_delete, post_save  # noqa: E402
+from django.dispatch import receiver  # noqa: E402
+
+
+@receiver([post_save, post_delete], sender=Unit)
+def _forget_unit_cache(sender, instance, **kwargs):
+    from django.core.cache import cache
+    cache.delete(f"unit_auth:{instance.serial}")

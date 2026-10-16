@@ -11,6 +11,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 
 from accounts.views import body, fail, is_verified, ok
+from .device import latest_for
 from .models import KEY_ALPHABET, Unit
 
 PAIR_MAX_FAILS = 10
@@ -93,6 +94,20 @@ def remove(request, serial):
         unit.latitude = unit.longitude = None
         unit.save(update_fields=["owner", "paired_at", "name", "latitude", "longitude"])
     return ok(message=f"{serial} was removed. It can now be connected with its Happy Key.")
+
+
+@require_GET
+def live(request, serial):
+    """Newest reading for one of MY units, straight from server memory. Step 5 turns this into the home screen."""
+    if not logged_in(request):
+        return not_logged_in()
+    if not Unit.objects.filter(serial=serial, owner=request.user).exists():
+        return fail("not_found", "That Happy Plant isn't on your account.", status=404)
+    item = latest_for(serial)
+    if not item:
+        return ok(serial=serial, online=False, reading=None, message="No reading from this Happy Plant since the server started.")
+    age = (timezone.now() - item["received_at"]).total_seconds()
+    return ok(serial=serial, online=age < 60, seconds_ago=int(age), reading=item["data"])
 
 
 @require_GET

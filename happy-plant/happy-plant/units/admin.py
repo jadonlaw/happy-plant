@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 from accounts.emails import send_happy_key
-from .models import Unit
+from .models import Reading, Unit
 
 
 @admin.register(Unit)
@@ -44,3 +44,16 @@ class UnitAdmin(admin.ModelAdmin):
     def remove_owner(self, request, queryset):
         n = queryset.exclude(owner=None).update(owner=None, paired_at=None, name="", latitude=None, longitude=None)
         self.message_user(request, f"Removed the owner from {n} unit(s).")
+
+
+@admin.register(Reading)
+class ReadingAdmin(admin.ModelAdmin):
+    list_display = ("unit", "received_at", "light_raw", "air_f", "moisture_raw", "soil_f", "battery_pct", "rssi")
+    list_filter = ("unit",)
+    date_hierarchy = "received_at"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
