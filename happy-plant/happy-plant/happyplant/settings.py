@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "core",
     "accounts",
+    "units",
 ]
 
 MIDDLEWARE = [
@@ -96,6 +97,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # stay logged in 30 days
+# Admin messages (like a new board secret) stay on the server, not in a browser cookie.
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 # Email (Twilio Email). Keys live in Railway -> Variables, never in code.
 TWILIO_API_KEY_SID = os.environ.get("TWILIO_API_KEY_SID", "")

@@ -86,6 +86,18 @@ def send_reset_code(user, code):
     return send(user.email, user.first_name, subject, text, html)
 
 
+def send_happy_key(to_email, key):
+    subject = "Your Happy Key"
+    text = (f"Your Happy Plant is on the way!\n\nYour Happy Key is: {key}\n\n"
+            "Open the Happy Plant app, sign in, and enter this key to connect your plant.\n"
+            "Keep this email. The key stays with your Happy Plant.\n\n- Happy Plant")
+    html = _wrap("Your Happy Plant is on the way!",
+                 f"<p>Your Happy Key is:</p>{_code_block(escape(key))}"
+                 "<p>Open the Happy Plant app, sign in, and enter this key to connect your plant.</p>"
+                 "<p style='color:#555;font-size:14px'>Keep this email. The key stays with your Happy Plant.</p>")
+    return send(to_email, "", subject, text, html)
+
+
 def send_welcome(user):
     name = user.first_name or "there"
     subject = "Welcome to Happy Plant!"
