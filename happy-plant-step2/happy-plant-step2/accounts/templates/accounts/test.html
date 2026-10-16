@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accounts test</title>
+<style>
+body{font-family:system-ui,Arial;background:#111;color:#eee;max-width:520px;margin:0 auto;padding:16px}
+h1{font-size:20px}fieldset{border:1px solid #444;border-radius:12px;margin:12px 0;padding:12px}
+input{display:block;width:100%;box-sizing:border-box;margin:6px 0;padding:10px;border-radius:8px;border:1px solid #555;background:#222;color:#eee}
+button{padding:10px 16px;border-radius:999px;border:0;background:#2f7d32;color:#fff;margin:4px 4px 0 0}
+pre{background:#000;padding:12px;border-radius:8px;white-space:pre-wrap;word-break:break-word}
+</style></head>
+<body>
+<h1>Happy Plant — accounts test page</h1>
+<p>Plain test page for step 2 only. Turn it off later by removing TEST_PAGES in Railway.</p>
+
+<fieldset><legend>Sign up</legend>
+<input id="su_name" placeholder="First name"><input id="su_email" placeholder="Email" type="email">
+<input id="su_pass" placeholder="Password (8+ characters)" type="password">
+<button onclick="call('signup',{first_name:v('su_name'),email:v('su_email'),password:v('su_pass')})">Sign up</button>
+</fieldset>
+
+<fieldset><legend>Verify email</legend>
+<input id="ve_email" placeholder="Email" type="email"><input id="ve_code" placeholder="6-digit code" inputmode="numeric">
+<button onclick="call('verify',{email:v('ve_email'),code:v('ve_code')})">Verify</button>
+<button onclick="call('resend',{email:v('ve_email'),purpose:'verify'})">Resend code</button>
+</fieldset>
+
+<fieldset><legend>Log in</legend>
+<input id="li_email" placeholder="Email" type="email"><input id="li_pass" placeholder="Password" type="password">
+<button onclick="call('login',{email:v('li_email'),password:v('li_pass')})">Log in</button>
+<button onclick="call('logout',{})">Log out</button>
+<button onclick="get('me')">Who am I?</button>
+</fieldset>
+
+<fieldset><legend>Reset password</legend>
+<input id="rs_email" placeholder="Email" type="email">
+<button onclick="call('reset/request',{email:v('rs_email')})">Send reset code</button>
+<input id="rs_code" placeholder="6-digit code" inputmode="numeric"><input id="rs_pass" placeholder="New password" type="password">
+<button onclick="call('reset/confirm',{email:v('rs_email'),code:v('rs_code'),new_password:v('rs_pass')})">Set new password</button>
+</fieldset>
+
+<h2 style="font-size:16px">Server reply</h2><pre id="out">—</pre>
+<script>
+const v=id=>document.getElementById(id).value;
+const csrf=()=>(document.cookie.match(/csrftoken=([^;]+)/)||[])[1]||'';
+const show=async r=>{document.getElementById('out').textContent=r.status+'\n'+JSON.stringify(await r.json(),null,2)};
+async function call(p,data){await fetch('/api/auth/csrf');show(await fetch('/api/auth/'+p,{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrf()},body:JSON.stringify(data)}))}
+async function get(p){show(await fetch('/api/auth/'+p))}
+</script>
+</body></html>
