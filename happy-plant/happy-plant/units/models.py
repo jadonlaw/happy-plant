@@ -39,8 +39,27 @@ class Unit(models.Model):
     notes = models.CharField(max_length=200, blank=True, help_text="Admin-only notes.")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # The plant this unit watches (one unit = one plant)
+    where = models.CharField(max_length=40, blank=True, help_text="Where the plant lives, e.g. Kitchen window.")
+    photo = models.TextField(blank=True, help_text="Small JPEG as a data URL (the app shrinks it to 256px).")
+    last_watered_at = models.DateTimeField(null=True, blank=True)
+    # What the plant needs. Temps in °F. Light 0-3 (Gloomy..Blazing). Moisture 0-4 (Parched..Drowning).
+    air_lo = models.FloatField(default=60)
+    air_hi = models.FloatField(default=85)
+    soil_lo = models.FloatField(default=55)
+    soil_hi = models.FloatField(default=80)
+    light_lo = models.PositiveSmallIntegerField(default=1)
+    light_hi = models.PositiveSmallIntegerField(default=2)
+    moist_lo = models.PositiveSmallIntegerField(default=2)
+    moist_hi = models.PositiveSmallIntegerField(default=3)
+
     class Meta:
         ordering = ["serial"]
+
+    @property
+    def wants(self):
+        return {"air": [self.air_lo, self.air_hi], "soil": [self.soil_lo, self.soil_hi],
+                "light": [self.light_lo, self.light_hi], "moist": [self.moist_lo, self.moist_hi]}
 
     def __str__(self):
         return self.serial

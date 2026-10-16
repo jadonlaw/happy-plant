@@ -75,7 +75,12 @@ def pair(request):
                                  "The owner has to remove it first.", status=409)
         unit.owner = request.user
         unit.paired_at = timezone.now()
-        unit.save(update_fields=["owner", "paired_at"])
+        fields = ["owner", "paired_at"]
+        prof = getattr(request.user, "profile", None)
+        if prof and prof.latitude is not None:  # use the location the phone already gave us
+            unit.latitude, unit.longitude = prof.latitude, prof.longitude
+            fields += ["latitude", "longitude"]
+        unit.save(update_fields=fields)
     cache.delete(fail_key)
     return ok(unit=unit_data(unit), next="home", message="Your Happy Plant is connected!")
 

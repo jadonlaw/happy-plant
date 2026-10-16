@@ -7,7 +7,13 @@ class Profile(models.Model):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     email_verified = models.BooleanField(default=False)
-    temp_unit = models.CharField(max_length=1, choices=[("F", "Fahrenheit"), ("C", "Celsius")], default="F")
+    temp_unit = models.CharField(max_length=1, choices=[("A", "Auto"), ("F", "Fahrenheit"), ("C", "Celsius")],
+                                 default="A")
+    time_zone = models.CharField(max_length=64, blank=True, help_text="From the phone, for sunrise/sunset times.")
+    latitude = models.FloatField(null=True, blank=True, help_text="From the phone. Used for new units.")
+    longitude = models.FloatField(null=True, blank=True)
+    push_alerts = models.BooleanField(default=True)
+    daily_checkin = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

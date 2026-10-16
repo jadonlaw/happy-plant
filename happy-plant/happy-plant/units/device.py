@@ -17,6 +17,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from .levels import moist_level, moisture_connected
 from .models import Reading, Unit
 
 WALL_POST_EVERY_S = 10
@@ -29,6 +30,31 @@ TEMP_DIVISOR = 45.0     # microseconds of charge-time change per degree F
 _lock = threading.Lock()
 LATEST = {}       # serial -> {"data": {...}, "received_at": datetime}
 LAST_SAVED = {}   # serial -> datetime of last database save
+
+
+MOIST_WINDOW = {}         # serial -> [(time, raw), ...] for the last 30 minutes
+LAST_WATER = {}           # serial -> time we last marked a watering
+WATER_DROP = 6000         # raw has to fall this much (wetter) to count as watering
+WATER_WINDOW_S = 30 * 60
+
+
+def _watering_check(serial, raw, now):
+    """Watering = moisture suddenly a lot wetter than anything in the last 30 minutes, ending at Just right or wetter.
+    Call while holding _lock."""
+    if not moisture_connected(raw):
+        return False
+    win = [(t, r) for (t, r) in MOIST_WINDOW.get(serial, []) if (now - t).total_seconds() <= WATER_WINDOW_S]
+    driest = max((r for _, r in win), default=None)
+    win.append((now, raw))
+    MOIST_WINDOW[serial] = win[-200:]
+    if driest is None or driest - raw < WATER_DROP or (moist_level(raw) or 0) < 2:
+        return False
+    last = LAST_WATER.get(serial)
+    if last and (now - last).total_seconds() < 3600:
+        return False
+    LAST_WATER[serial] = now
+    MOIST_WINDOW[serial] = [(now, raw)]
+    return True
 
 
 def latest_for(serial):
@@ -111,7 +137,10 @@ def readings(request):
         due = last is None or (now - last).total_seconds() >= info["save_every"]
         if due:
             LAST_SAVED[serial] = now
+        watered = _watering_check(serial, data["moisture_raw"], now)
 
+    if watered:
+        Unit.objects.filter(id=info["id"]).update(last_watered_at=now)
     if due:
         Reading.objects.create(unit_id=info["id"], received_at=now, light_raw=data["light_raw"], air_f=data["air_f"],
                                air_raw=data["air_raw"], moisture_raw=data["moisture_raw"], soil_f=data["soil_f"],

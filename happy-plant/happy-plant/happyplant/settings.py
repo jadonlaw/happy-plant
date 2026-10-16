@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "core",
     "accounts",
     "units",
+    "web",
 ]
 
 MIDDLEWARE = [

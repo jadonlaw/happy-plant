@@ -111,6 +111,8 @@ def signup(request):
     if existing and is_verified(existing):
         return fail("email_taken", "There's already an account with this email. Try logging in.", status=409)
 
+    if "password2" in d and d.get("password2") != password:
+        return fail("password", "Passwords don't match.")
     probe = existing or User(username=email, email=email, first_name=first_name)
     problem = password_problem(password, probe)
     if problem:
@@ -253,6 +255,8 @@ def reset_confirm(request):
     user = find_user(email)
     if not user or not is_verified(user):
         return fail("wrong", "That code isn't right.")
+    if "password2" in d and d.get("password2") != new_password:
+        return fail("password", "Passwords don't match.")
     problem = password_problem(new_password, user)
     if problem:
         return fail("password", problem)
