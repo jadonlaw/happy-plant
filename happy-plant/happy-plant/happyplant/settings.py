@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "core",
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -90,6 +91,27 @@ STORAGES = {
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# One server process, so an in-memory cache is enough (used for login-attempt limits).
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # stay logged in 30 days
+
+# Email (Twilio Email). Keys live in Railway -> Variables, never in code.
+TWILIO_API_KEY_SID = os.environ.get("TWILIO_API_KEY_SID", "")
+TWILIO_API_KEY_SECRET = os.environ.get("TWILIO_API_KEY_SECRET", "")
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "hello@happyplant.shop")
+EMAIL_FROM_NAME = "Happy Plant"
+
+# Plain test page for accounts at /test/accounts. Only on when TEST_PAGES=1.
+TEST_PAGES = os.environ.get("TEST_PAGES") == "1"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+}
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
