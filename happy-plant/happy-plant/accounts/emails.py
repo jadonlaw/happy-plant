@@ -98,6 +98,27 @@ def send_happy_key(to_email, key):
     return send(to_email, "", subject, text, html)
 
 
+LEAVE_URL = "https://happy-plant-production.up.railway.app/api/waitlist/leave?t="
+
+
+def send_waitlist_confirmation(to_email, token):
+    subject = "You're on the Happy Plant waitlist"
+    text = ("Thanks for joining the Happy Plant waitlist!\n\n"
+            "Happy Plant is a small sensor that sits in your plant's pot and checks light, temperature and soil "
+            "moisture. Your phone shows a face, so you can tell at a glance if your plant is happy.\n\n"
+            "This is one of only two emails you'll get from us. The next one comes when Happy Plant launches.\n\n"
+            "- Jadon, Happy Plant\n\nDon't want these? Remove yourself: " + LEAVE_URL + token)
+    html = _wrap("You're on the list!",
+                 "<p>Thanks for joining the Happy Plant waitlist.</p>"
+                 "<p>Happy Plant is a small sensor that sits in your plant's pot and checks light, temperature and "
+                 "soil moisture. Your phone shows a face, so you can tell at a glance if your plant is happy.</p>"
+                 "<p>This is one of only two emails you'll get from us. The next one comes when Happy Plant "
+                 "launches.</p><p>— Jadon, Happy Plant</p>"
+                 f"<p style='color:#777;font-size:12px;margin-top:24px'>Don't want these? "
+                 f"<a href='{LEAVE_URL}{token}' style='color:#777'>Remove me from the list</a>.</p>")
+    return send(to_email, "", subject, text, html)
+
+
 def send_welcome(user):
     name = user.first_name or "there"
     subject = "Welcome to Happy Plant!"

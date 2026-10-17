@@ -5,6 +5,7 @@ from accounts.views import test_page as accounts_test_page
 from core import views
 from units.device import readings as device_readings
 from units.views import test_page as units_test_page
+from waitlist.views import join as waitlist_join, leave as waitlist_leave
 from web.views import index as app_index
 
 admin.site.site_header = "Happy Plant admin"
@@ -17,6 +18,8 @@ urlpatterns = [
     path("api/auth/", include("accounts.urls")),
     path("api/units/", include("units.urls")),
     path("api/device/readings", device_readings),
+    path("api/waitlist", waitlist_join),
+    path("api/waitlist/leave", waitlist_leave),
     path("test/accounts", accounts_test_page),
     path("test/units", units_test_page),
     path("admin/", admin.site.urls),
