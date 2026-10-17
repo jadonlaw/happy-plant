@@ -32,8 +32,8 @@ WIFI_NAME = "Law103"
 WIFI_PASSWORD = "internet0"
 
 SERVER = "https://happy-plant-production.up.railway.app/api/device/readings"
-SERIAL = "HP-0004"                           # must match the unit in /admin
-SECRET = "1PwgUo53dgRgbemgD4J--K2M3teYJUH9"     # this unit's board secret
+SERIAL = "HP-0005"                        # must match the unit in /admin
+SECRET = "KvGaCKCn1DlX1RUf4XPkDmKJ0z3F65mL"     # this unit's board secret
 
 USE_WATCHDOG = False   # turn on (True) for the demo: auto-restarts the board if it ever freezes
 
